@@ -22,8 +22,8 @@
 #ifndef TFTv2_h
 #define TFTv2_h
 
-#include <Energia.h>
-#include <SPI.h>
+#include "Energia.h"
+#include "SPI.h"
 #include <stdint.h>
 
 #if defined(__LM4F120H5QR__)
@@ -77,8 +77,8 @@ public:
 	void fillScreen(void);
 	uint8_t readID(void);
 
-	void drawChar(uint8_t ascii,uint16_t poX, uint16_t poY,uint16_t size, uint16_t fgcolor);
-	void drawString(char *string,uint16_t poX, uint16_t poY,uint16_t size,uint16_t fgcolor);
+	void drawChar(uint8_t ascii,uint16_t poX, uint16_t poY,uint16_t size, uint16_t fgcolor,uint16_t bgcolor);
+	void drawString(char *string,uint16_t poX, uint16_t poY,uint16_t size,uint16_t fgcolor, uint16_t bgcolor);
 	void fillRectangle(uint16_t poX, uint16_t poY, uint16_t length, uint16_t width, uint16_t color);
 
 	void drawLine(uint16_t x0,uint16_t y0,uint16_t x1,uint16_t y1,uint16_t color);
@@ -90,13 +90,12 @@ public:
 	void fillCircle(int poX, int poY, int r,uint16_t color);
 
 	void drawTraingle(int poX1, int poY1, int poX2, int poY2, int poX3, int poY3, uint16_t color);
-	uint8_t drawNumber(long long_num,uint16_t poX, uint16_t poY,uint16_t size,uint16_t fgcolor);
-	uint8_t drawFloat(float floatNumber,uint8_t decimal,uint16_t poX, uint16_t poY,uint16_t size,uint16_t fgcolor);
-	uint8_t drawFloat(float floatNumber,uint16_t poX, uint16_t poY,uint16_t size,uint16_t fgcolor);
+	uint8_t drawNumber(long long_num,uint16_t poX, uint16_t poY,uint16_t size,uint16_t fgcolor, uint16_t bgcolor);
+	uint8_t drawFloat(float floatNumber,uint8_t decimal,uint16_t poX, uint16_t poY,uint16_t size,uint16_t fgcolor, uint16_t bgcolor);
 
   private:
 
-	uint8_t _csPin, _dcPin, _blPin, _rstPin;
+	uint8_t _csPin, _dcPin, _blPin, _rstPin, _port_cs, _bit_cs, _port_dc, _bit_dc, _port_bl, _bit_bl, _port_rst, _bit_rst;
 
 };
 
