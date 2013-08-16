@@ -19,6 +19,9 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
+
+
+
 #ifndef TFTv2_h
 #define TFTv2_h
 
@@ -32,6 +35,8 @@
 #include <driverlib/sysctl.h>
 #include <driverlib/pin_map.h>
 #include <driverlib/gpio.h>
+#else
+#error Board not supported.
 #endif
 
 //Basic Colors

@@ -1,13 +1,13 @@
 /*  draw text's APP
-    drawChar(INT8U ascii,INT16U poX, INT16U poY,INT16U size, INT16U fgcolor,INT16U bgcolor);
-    drawString(char *string,INT16U poX, INT16U poY,INT16U size,INT16U fgcolor,INT16U bgcolor);
+    drawChar(INT8U ascii,INT16U poX, INT16U poY,INT16U size, INT16U fgcolor);
+    drawString(char *string,INT16U poX, INT16U poY,INT16U size,INT16U fgcolor);
 */
 
 #include <TFTv2.h>
 #include <SPI.h>
 void setup()
-{
-    Serial.begin(115200);
+{	
+    Serial.begin(115200);			   // Don't remove
 
     Tft.begin(PE_1,PE_2,PE_3,PE_4);                // CS,DC,BL,RESET pin
     Tft.TFTinit();                                 // init TFT library

@@ -19,28 +19,39 @@
  Foundation, Inc.,51 Franklin St,Fifth Floor, Boston, MA 02110-1301 USA
 
 */
+// Board check
+#if defined(__LM4F120H5QR__)
+#else
+#error Board not supported.
+#endif
 
-#include <Energia.h>
 #include <TFTv2.h>
-#include <SPI.h>
+#include "Energia.h"
+#include "SPI.h"
+#include "FastDigitalWrite.h"
+
 #define FONT_SPACE 6
 #define FONT_X 8
 #define FONT_Y 8
 
+#define portOutputRegister(x) (regtype)portBASERegister(x)
+#define cbi_macro(reg, mask) GPIOPinWrite(reg, mask, 0)
+#define sbi_macro(reg, mask) GPIOPinWrite(reg, mask, mask)
+
 void TFT::sendCMD(uint8_t index)
 {
     digitalWrite(_dcPin,   LOW);
-    digitalWrite(_csPin,   LOW);
+    cbi_macro(_port_cs, _bit_cs);   
     SPI.transfer(index);
-    digitalWrite(_csPin,   HIGH);
+    sbi_macro(_port_cs, _bit_cs); 
 }
 
 void TFT::WRITE_DATA(uint8_t data)
 {
     digitalWrite(_dcPin,   HIGH);
-    digitalWrite(_csPin,   LOW);
+    cbi_macro(_port_cs, _bit_cs); 
     SPI.transfer(data);
-    digitalWrite(_csPin,   HIGH);
+    sbi_macro(_port_cs, _bit_cs); 
 }
 
 void TFT::sendData(uint16_t data)
@@ -48,10 +59,10 @@ void TFT::sendData(uint16_t data)
     uint8_t data1 = data>>8;
     uint8_t data2 = data&0xff;
     digitalWrite(_dcPin,   HIGH);
-    digitalWrite(_csPin,   LOW);
+    cbi_macro(_port_cs, _bit_cs); 
     SPI.transfer(data1);
     SPI.transfer(data2);
-    digitalWrite(_csPin,   HIGH);
+    sbi_macro(_port_cs, _bit_cs); 
 }
 
 void TFT::WRITE_Package(uint16_t *data, uint8_t howmany)
@@ -60,7 +71,7 @@ void TFT::WRITE_Package(uint16_t *data, uint8_t howmany)
     uint8_t   data2 = 0;
 
     digitalWrite(_dcPin,   HIGH);
-    digitalWrite(_csPin,   LOW);
+    cbi_macro(_port_cs, _bit_cs); 
     uint8_t count=0;
     for(count=0;count<howmany;count++)
     {
@@ -69,7 +80,7 @@ void TFT::WRITE_Package(uint16_t *data, uint8_t howmany)
         SPI.transfer(data1);
         SPI.transfer(data2);
     }
-    digitalWrite(_csPin,   HIGH);
+    sbi_macro(_port_cs, _bit_cs); 
 }
 
 uint8_t TFT::Read_Register(uint8_t Addr, uint8_t xParameter)
@@ -78,11 +89,11 @@ uint8_t TFT::Read_Register(uint8_t Addr, uint8_t xParameter)
     sendCMD(0xd9);                                                      /* ext command                  */
     WRITE_DATA(0x10+xParameter);                                        /* 0x11 is the first Parameter  */
     digitalWrite(_dcPin,   LOW);
-    digitalWrite(_csPin,   LOW);
+    cbi_macro(_port_cs, _bit_cs); 
     SPI.transfer(Addr);
     digitalWrite(_dcPin,   HIGH);
     data = SPI.transfer(0);
-    digitalWrite(_csPin,   HIGH);
+    sbi_macro(_port_cs, _bit_cs); 
     return data;
 }
 
@@ -92,6 +103,11 @@ void TFT::begin(uint8_t csPin, uint8_t dcPin, uint8_t blPin, uint8_t rstPin)
 	_dcPin=dcPin;
 	_blPin=blPin;
 	_rstPin=rstPin;
+
+
+	_port_cs   = portOutputRegister(digitalPinToPort(_csPin));
+	_bit_cs    = digitalPinToBitMask(_csPin);
+
 
 }
 
@@ -109,8 +125,11 @@ void TFT::backlight_off(void)
 void TFT::TFTinit (void)
 {
 
+	//pinMode(_csPin, OUTPUT);
+	//digitalWrite(_csPin, HIGH);
+
 	pinMode(_csPin, OUTPUT);
-	digitalWrite(_csPin, HIGH);
+        sbi_macro(_port_cs, _bit_cs); 
 
 	pinMode(_dcPin, OUTPUT);
 	digitalWrite(_dcPin, LOW);
@@ -123,16 +142,17 @@ void TFT::TFTinit (void)
 
 	SPI.begin();
 	SPI.setDataMode(SPI_MODE0);
-	SPI.setBitOrder(1); // MSB-first
+	//SPI.setClockDivider(SPI_CLOCK_DIV4);
+	SPI.setBitOrder(MSBFIRST); 
 
 	SPI.transfer(0);  // Strawman transfer, fixes USCI issue on G2553
 
-    digitalWrite(_csPin,   HIGH);
+    sbi_macro(_port_cs, _bit_cs); 
     digitalWrite(_dcPin,   HIGH);
     uint8_t i=0, TFTDriver=0;
 
 	digitalWrite(_rstPin,   LOW);
-	delay(100);
+	delay(10);
 	digitalWrite(_rstPin,   HIGH);
 
     for(i=0;i<3;i++)
@@ -317,7 +337,7 @@ void TFT::fillScreen(uint16_t XL, uint16_t XR, uint16_t YU, uint16_t YD, uint16_
                                                                         /* m                            */
 
     digitalWrite(_dcPin,   HIGH);
-    digitalWrite(_csPin,   LOW);
+    cbi_macro(_port_cs, _bit_cs); 
 
     uint8_t Hcolor = color>>8;
     uint8_t Lcolor = color&0xff;
@@ -327,7 +347,7 @@ void TFT::fillScreen(uint16_t XL, uint16_t XR, uint16_t YU, uint16_t YD, uint16_
         SPI.transfer(Lcolor);
     }
 
-    digitalWrite(_csPin,   HIGH);
+    sbi_macro(_port_cs, _bit_cs); 
 }
 
 void TFT::fillScreen(void)
@@ -338,7 +358,7 @@ void TFT::fillScreen(void)
                                                                         /* m                            */
 
     digitalWrite(_dcPin,   HIGH);
-    digitalWrite(_csPin,   LOW);
+    cbi_macro(_port_cs, _bit_cs); 
     for(uint16_t i=0; i<38400; i++)
     {
         SPI.transfer(0);
@@ -346,7 +366,7 @@ void TFT::fillScreen(void)
         SPI.transfer(0);
         SPI.transfer(0);
     }
-    digitalWrite(_csPin,   HIGH);
+    sbi_macro(_port_cs, _bit_cs); 
 }
 
 
@@ -363,8 +383,12 @@ void TFT::setPixel(uint16_t poX, uint16_t poY,uint16_t color)
     sendData(color);
 }
 
-void TFT::drawChar( uint8_t ascii, uint16_t poX, uint16_t poY,uint16_t size, uint16_t fgcolor)
+void TFT::drawChar( uint8_t ascii, uint16_t poX, uint16_t poY,uint16_t size, uint16_t fgcolor, uint16_t bgcolor)
 {
+
+    //fillRectangle(poX, poY, poX+FONT_X*size, poY+FONT_Y*size, BLACK);
+
+
     if((ascii>=32)&&(ascii<=127))
     {
         ;
@@ -381,17 +405,19 @@ void TFT::drawChar( uint8_t ascii, uint16_t poX, uint16_t poY,uint16_t size, uin
             {
                 fillRectangle(poX+i*size, poY+f*size, size, size, fgcolor);
             }
+	    else
+		fillRectangle(poX+i*size, poY+f*size, size, size, bgcolor);
 
         }
 
     }
 }
 
-void TFT::drawString(char *string,uint16_t poX, uint16_t poY, uint16_t size,uint16_t fgcolor)
+void TFT::drawString(char *string,uint16_t poX, uint16_t poY, uint16_t size,uint16_t fgcolor, uint16_t bgcolor)
 {
     while(*string)
     {
-        drawChar(*string, poX, poY, size, fgcolor);
+        drawChar(*string, poX, poY, size, fgcolor, bgcolor);
         *string++;
 
         if(poX < MAX_X)
@@ -500,16 +526,17 @@ void TFT::drawTraingle( int poX1, int poY1, int poX2, int poY2, int poX3, int po
     drawLine(poX2, poY2, poX3, poY3,color);
 }
 
-uint8_t TFT::drawNumber(long long_num,uint16_t poX, uint16_t poY,uint16_t size,uint16_t fgcolor)
+uint8_t TFT::drawNumber(long long_num,uint16_t poX, uint16_t poY,uint16_t size,uint16_t fgcolor, uint16_t bgcolor)
 {
     uint8_t char_buffer[10] = "";
     uint8_t i = 0;
     uint8_t f = 0;
 
+
     if (long_num < 0)
     {
         f=1;
-        drawChar('-',poX, poY, size, fgcolor);
+        drawChar('-',poX, poY, size, fgcolor, bgcolor);
         long_num = -long_num;
         if(poX < MAX_X)
         {
@@ -519,7 +546,7 @@ uint8_t TFT::drawNumber(long long_num,uint16_t poX, uint16_t poY,uint16_t size,u
     else if (long_num == 0)
     {
         f=1;
-        drawChar('0',poX, poY, size, fgcolor);
+        drawChar('0',poX, poY, size, fgcolor, bgcolor);
         return f;
         if(poX < MAX_X)
         {
@@ -537,7 +564,7 @@ uint8_t TFT::drawNumber(long long_num,uint16_t poX, uint16_t poY,uint16_t size,u
     f = f+i;
     for(; i > 0; i--)
     {
-        drawChar('0'+ char_buffer[i - 1],poX, poY, size, fgcolor);
+        drawChar('0'+ char_buffer[i - 1],poX, poY, size, fgcolor, bgcolor);
         if(poX < MAX_X)
         {
             poX+=FONT_SPACE*size;                                       /* Move cursor right            */
@@ -546,7 +573,7 @@ uint8_t TFT::drawNumber(long long_num,uint16_t poX, uint16_t poY,uint16_t size,u
     return f;
 }
 
-uint8_t TFT::drawFloat(float floatNumber,uint8_t decimal,uint16_t poX, uint16_t poY,uint16_t size,uint16_t fgcolor)
+uint8_t TFT::drawFloat(float floatNumber,uint8_t decimal,uint16_t poX, uint16_t poY,uint16_t size,uint16_t fgcolor, uint16_t bgcolor)
 {
     uint16_t temp=0;
     float decy=0.0;
@@ -554,7 +581,7 @@ uint8_t TFT::drawFloat(float floatNumber,uint8_t decimal,uint16_t poX, uint16_t 
     uint8_t f=0;
     if(floatNumber<0.0)
     {
-        drawChar('-',poX, poY, size, fgcolor);
+        drawChar('-',poX, poY, size, fgcolor, bgcolor);
         floatNumber = -floatNumber;
         if(poX < MAX_X)
         {
@@ -569,7 +596,7 @@ uint8_t TFT::drawFloat(float floatNumber,uint8_t decimal,uint16_t poX, uint16_t 
     floatNumber += rounding;
 
     temp = (uint16_t)floatNumber;
-    uint8_t howlong=drawNumber(temp,poX, poY, size, fgcolor);
+    uint8_t howlong=drawNumber(temp,poX, poY, size, fgcolor, bgcolor);
     f += howlong;
     if((poX+8*size*howlong) < MAX_X)
     {
@@ -578,7 +605,7 @@ uint8_t TFT::drawFloat(float floatNumber,uint8_t decimal,uint16_t poX, uint16_t 
 
     if(decimal>0)
     {
-        drawChar('.',poX, poY, size, fgcolor);
+        drawChar('.',poX, poY, size, fgcolor, bgcolor);
         if(poX < MAX_X)
         {
             poX+=FONT_SPACE*size;                                       /* Move cursor right            */
@@ -590,7 +617,7 @@ uint8_t TFT::drawFloat(float floatNumber,uint8_t decimal,uint16_t poX, uint16_t 
     {
         decy *=10;                                                      /* for the next decimal         */
         temp = decy;                                                    /* get the decimal              */
-        drawNumber(temp,poX, poY, size, fgcolor);
+        drawNumber(temp,poX, poY, size, fgcolor, bgcolor);
         floatNumber = -floatNumber;
         if(poX < MAX_X)
         {
@@ -602,63 +629,6 @@ uint8_t TFT::drawFloat(float floatNumber,uint8_t decimal,uint16_t poX, uint16_t 
     return f;
 }
 
-uint8_t TFT::drawFloat(float floatNumber,uint16_t poX, uint16_t poY,uint16_t size,uint16_t fgcolor)
-{
-    uint8_t decimal=2;
-    uint16_t temp=0;
-    float decy=0.0;
-    float rounding = 0.5;
-    uint8_t f=0;
-    if(floatNumber<0.0)                                                 /* floatNumber < 0              */
-    {
-        drawChar('-',poX, poY, size, fgcolor);                          /* add a '-'                    */
-        floatNumber = -floatNumber;
-        if(poX < MAX_X)
-        {
-            poX+=FONT_SPACE*size;                                       /* Move cursor right            */
-        }
-        f =1;
-    }
-    for (uint8_t i=0; i<decimal; ++i)
-    {
-        rounding /= 10.0;
-    }
-    floatNumber += rounding;
-
-    temp = (uint16_t)floatNumber;
-    uint8_t howlong=drawNumber(temp,poX, poY, size, fgcolor);
-    f += howlong;
-    if((poX+8*size*howlong) < MAX_X)
-    {
-        poX+=FONT_SPACE*size*howlong;                                   /* Move cursor right            */
-    }
-
-
-    if(decimal>0)
-    {
-        drawChar('.',poX, poY, size, fgcolor);
-        if(poX < MAX_X)
-        {
-            poX += FONT_SPACE*size;                                     /* Move cursor right            */
-        }
-        f +=1;
-    }
-    decy = floatNumber-temp;                                            /* decimal part,                */
-    for(uint8_t i=0;i<decimal;i++)
-    {
-        decy *=10;                                                      /* for the next decimal         */
-        temp = decy;                                                    /* get the decimal              */
-        drawNumber(temp,poX, poY, size, fgcolor);
-        floatNumber = -floatNumber;
-        if(poX < MAX_X)
-        {
-            poX += FONT_SPACE*size;                                     /* Move cursor right            */
-        }
-        decy -= temp;
-    }
-    f += decimal;
-    return f;
-}
 
 TFT Tft=TFT();
 /*********************************************************************************************************
