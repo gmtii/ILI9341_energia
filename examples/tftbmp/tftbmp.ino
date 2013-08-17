@@ -5,7 +5,7 @@
 int bmpWidth, bmpHeight;
 uint8_t bmpDepth, bmpImageoffset;
 
-#define cs_pin      12             		// chip select pin on the arduino
+#define cs_pin      PA_5             		        // chip select pin on the Stellaris
 #define file        "FLOWER.BMP"                // BMP filename on SD
 #define file2       "hibiscus.bmp"              // BMP filename on SD
 
