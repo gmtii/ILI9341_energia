@@ -66,7 +66,7 @@ void dir_list (void) {
 
 // Returns byte located at offset_counter variable and does offset_counter++ for next time
 
-char file_secuential_read() {
+char file_sequential_read() {
 
   unsigned int bytes_read;                      // number of bytes read each call
   char out[1];
@@ -161,8 +161,8 @@ uint16_t read16()
 {
   uint16_t d;
   uint8_t b;
-  b = file_secuential_read();
-  d = file_secuential_read();
+  b = file_sequential_read();
+  d = file_sequential_read();
   d <<= 8;
   d |= b;
   return d;
