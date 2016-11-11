@@ -17,7 +17,7 @@
 /// @see	ReadMe.txt for references
 ///
 // Board check
-#if defined(__LM4F120H5QR__)
+#if defined(TARGET_IS_BLIZZARD_RB1) || defined(TARGET_IS_SNOWFLAKE_RA0) || defined(__LM4F120H5QR__)
 #else
 #error Board not supported.
 #endif
