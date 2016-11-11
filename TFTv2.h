@@ -29,7 +29,7 @@
 #include "SPI.h"
 #include <stdint.h>
 
-#if defined(__LM4F120H5QR__)
+#if defined(TARGET_IS_BLIZZARD_RB1) || defined(TARGET_IS_SNOWFLAKE_RA0) || defined(__LM4F120H5QR__)
 #include <inc/hw_types.h>
 #include <inc/hw_memmap.h>
 #include <driverlib/sysctl.h>
