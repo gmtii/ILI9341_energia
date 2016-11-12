@@ -19,11 +19,6 @@
  Foundation, Inc.,51 Franklin St,Fifth Floor, Boston, MA 02110-1301 USA
 
 */
-// Board check
-#if defined(__LM4F120H5QR__)
-#else
-#error Board not supported.
-#endif
 
 #include <TFTv2.h>
 #include "Energia.h"
